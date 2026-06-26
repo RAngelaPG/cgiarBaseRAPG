@@ -137,18 +137,26 @@ crossVerification <- function(Mf,Mm,Mp,
   }
 
   # compute metrics for individuals
+  # Minimum number of non-missing markers required to compute probMatch
+  min_markers <- 8L
+
   if(is.null(sc_filter)){
     probMatch <- apply(resultMatch, 1, function(x) {
-      num <- sum(x, na.rm = TRUE)
       den <- sum(!is.na(x))
-      if (den > 0) num / den else NA_real_
+      if (den >= min_markers) sum(x, na.rm = TRUE) / den else NA_real_
     })
   }else if(sc_filter == "Score2"){
     sel = (score_Mexp == 2L)
-    probMatch = rowMeans(ifelse(sel, resultMatch, NA_real_), na.rm = TRUE)
+    probMatch <- apply(ifelse(sel, resultMatch, NA_real_), 1, function(x) {
+      den <- sum(!is.na(x))
+      if (den >= min_markers) sum(x, na.rm = TRUE) / den else NA_real_
+    })
   }else if(sc_filter == "ScoreNon0"){
     sel = (score_Mexp != 0)
-    probMatch = rowMeans(ifelse(sel, resultMatch, NA_real_), na.rm = TRUE)
+    probMatch <- apply(ifelse(sel, resultMatch, NA_real_), 1, function(x) {
+      den <- sum(!is.na(x))
+      if (den >= min_markers) sum(x, na.rm = TRUE) / den else NA_real_
+    })
   }
 
   #Observed heterozigosity
